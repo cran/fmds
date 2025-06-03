@@ -6,12 +6,14 @@
 #' @param \dots additional arguments to be passed.
 #' 
 #' @return none
+#'
+#' @author Frank M.T.A. Busing
 #' @export
 print.fmds<- function(x, ...)
 {
   cat( "Call (fmds package)       : " )
   print( x$call )
-  if ( grepl( "fastmds", as.character( x$call )[1], fixed = TRUE ) ) {
+  if ( grepl( "fast", as.character( x$call )[1], fixed = TRUE ) ) {
     cat( "Last iteration            :", x$last.iteration, "\n" )
     cat( "Last function difference  :", sprintf( x$last.difference, fmt = '%#.12f'), "\n" )
     cat( "Normalized Stress value   :", format( x$n.stress, nsmall = 12 ), "\n" )

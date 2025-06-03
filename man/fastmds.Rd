@@ -103,10 +103,7 @@ n <- nrow( delta )
 w <- 1 - diag( n )
 p <- 2
 zinit <- matrix( runif( n * p ), n, p )
-r <- fastmds( delta, w, p, z = zinit, echo = TRUE )
-summary( r )
-print( r )
-plot( r )
+#r <- fastmds( delta, w, p, z = zinit, echo = TRUE )
 
 }
 \references{

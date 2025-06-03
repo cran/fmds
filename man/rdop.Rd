@@ -26,13 +26,6 @@ if ( extended == FALSE ): outlier scores; else: weights matrix
 \description{
 \code{rdop} returns the relative density-based outlier probabilities according to Barroso and Busing (2025).
 }
-\examples{
-data <- as.matrix( iris[,1:4] )
-distances <- dist( data )
-scores <- rdop( data = data )
-weights <- rdop( distances, extended = TRUE )
-
-}
 \references{
 Barroso and Busing (2025).
 }

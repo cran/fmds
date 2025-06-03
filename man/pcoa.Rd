@@ -51,14 +51,6 @@ An additive constant may be provided, which is added to the dissimilarities.
 This constant might be obtained optimally with the function fastaddconst().
 Error checking focuses on the data requirements.
 }
-\examples{
-delta <- as.matrix( eurodist )
-p <- 2
-r <- pcoa( delta = delta, p = p, error.check = TRUE )
-head( r )
-plot( r )
-
-}
 \references{
 Young and Householder (1938)
             Torgerson (1952, 1958)

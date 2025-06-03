@@ -66,17 +66,6 @@
 #'             Busing, F.M.T.A. (submitted). Node Localization by Multidimensional Scaling with Iterative Majorization: A Psychometric Perspective.
 #'             Signal Processing, Elsevier.
 #'
-#' @examples
-#' data( "colors" )
-#' delta <- as.matrix( ( colors )^3 )
-#' n <- nrow( delta )
-#' w <- 1 - diag( n )
-#' p <- 2
-#' zinit <- matrix( runif( n * p ), n, p )
-#' r <- fullmds( delta = delta, w = w, p = p, z = zinit, echo = TRUE )
-#' summary( r )
-#' print( r )
-#' plot( r )
 #'
 #' @author Frank M.T.A. Busing
 #' @export

@@ -40,8 +40,8 @@ double linmds( const size_t n, double** delta, const size_t p, double** z, doubl
   dcopy( n * n, &delta[1][1], 1, &gamma[1][1], 1 );
   double scale = dssq( n * n, &gamma[1][1], 1 );
   double fold = dsse( n * n, &gamma[1][1], 1, &d[1][1], 1 ) / scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -182,8 +182,8 @@ double linwgtmds( const size_t n, double** delta, double** w, const size_t p, do
   dcopy( n * n, &delta[1][1], 1, &gamma[1][1], 1 );
   double scale = dwssq( n * n, &gamma[1][1], 1, &w[1][1], 1 );
   double fold = dwsse( n * n, &gamma[1][1], 1, &d[1][1], 1, &w[1][1], 1 ) / scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -330,8 +330,8 @@ double fxdlinmds( const size_t n, double** delta, const size_t p, double** z, in
   dcopy( n * n, &delta[1][1], 1, &gamma[1][1], 1 );
   double scale = dssq( n * n, &gamma[1][1], 1 );
   double fold = dsse( n * n, &gamma[1][1], 1, &d[1][1], 1 ) / scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -478,8 +478,8 @@ double fxdlinwgtmds( const size_t n, double** delta, double** w, const size_t p,
   dcopy( n * n, &delta[1][1], 1, &gamma[1][1], 1 );
   double scale = dwssq( n * n, &gamma[1][1], 1, &w[1][1], 1 );
   double fold = dwsse( n * n, &gamma[1][1], 1, &d[1][1], 1, &w[1][1], 1 ) / scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -655,8 +655,8 @@ double varlinmds( const size_t n, double** delta, const size_t p, const size_t h
   dcopy( n * n, &delta[1][1], 1, &gamma[1][1], 1 );
   double scale = dssq( n * n, &gamma[1][1], 1 );
   double fold = dsse( n * n, &gamma[1][1], 1, &d[1][1], 1 ) / scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -833,8 +833,8 @@ double varlinwgtmds( const size_t n, double** delta, double** w, const size_t p,
   dcopy( n * n, &delta[1][1], 1, &gamma[1][1], 1 );
   double scale = dwssq( n * n, &gamma[1][1], 1, &w[1][1], 1 );
   double fold = dwsse( n * n, &gamma[1][1], 1, &d[1][1], 1, &w[1][1], 1 ) / scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 

@@ -11,10 +11,6 @@
 #'
 #' @return none
 #'
-#' @examples
-#' delta <- as.matrix( eurodist )
-#' r <- fastmds( delta = delta )
-#' plot( r )
 #'
 #' @importFrom graphics par abline points lines legend text axis mtext polygon
 #' @export

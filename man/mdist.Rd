@@ -26,16 +26,9 @@ mdist(
 \description{
 \code{fastmixed} returns Euclidean distances for variables from mixed measurement levels.
 }
-\examples{
-data <- as.matrix( iris[,1:4] )
-d.orig <- as.matrix( dist( data ) )
-d.mixed <- as.matrix( mdist( data ) )
-all.equal( d.orig, d.mixed )
-
-}
 \references{
-Busing (2025). 
-            A Consistent Distance Measure for Mixed Data: 
+Busing (2025).
+            A Consistent Distance Measure for Mixed Data:
             Bridging the Gap between Euclidean and Chi-Squared Distances.
             Manuscript in progress.
 }

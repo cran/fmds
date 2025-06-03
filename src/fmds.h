@@ -107,6 +107,7 @@ extern void Csimmds3( int* rn, int* rm, double* rx, int* rp, double* rz, int* rn
 extern void Csimfxdmds1( int* rn, double* rdist, int* rp, double* rz, int* rfz, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimfxdmds2( int* rn, double* rdelta, int* rp, double* rz, int* rfz, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimfxdmds3( int* rn, int* rm, double* rx, int* rp, double* rz, int* rfz, int* rnepochs, double* rminrate, int* rseed );
+extern void Csimlinmds2( int* rn, double* rdelta, double* ra, double* rb, int* rp, double* rz, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimmds1local( int* rn, double* rdist, int* rp, double* rz, double* rboundary, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimmds2local( int* rn, double* rdelta, int* rp, double* rz, double* rboundary, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimmds3local( int* rn, int* rm, double* rx, int* rp, double* rz, double* rboundary, int* rnepochs, double* rminrate, int* rseed );
@@ -133,7 +134,10 @@ extern void Csimwgtmds2interval( int* rn, double* rdelta, double* rw, int* rp, d
 extern void Csimfxdwgtmds2interval( int* rn, double* rdelta, double* rw, int* rp, double* rz, int* rfz, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimwgtmds2localinterval( int* rn, double* rdelta, double* rw, int* rp, double* rz, double* rboundary, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimfxdwgtmds2localinterval( int* rn, double* rdelta, double* rw, int* rp, double* rz, int* rfz, double* rboundary, int* rnepochs, double* rminrate, int* rseed );
-extern void Csimlmkmds3( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rnlandmarks, int* rseed );
+extern void Csimmds3bsc( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rseed );
+extern void Csimmds3ave( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rseed );
+extern void Csimmds3mom( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rnesterov, int* rseed );
+extern void Csimmds3adm( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rnesterov, int* rseed );
 extern void simmds_unittest( long seed );
 
 // explain.c

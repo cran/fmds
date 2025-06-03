@@ -9,16 +9,11 @@
 #'
 #' @return 'dist' object with Euclidean distances between objects.
 #'
-#' @references Busing (2025). 
-#'             A Consistent Distance Measure for Mixed Data: 
+#' @references Busing (2025).
+#'             A Consistent Distance Measure for Mixed Data:
 #'             Bridging the Gap between Euclidean and Chi-Squared Distances.
 #'             Manuscript in progress.
 #'
-#' @examples
-#' data <- as.matrix( iris[,1:4] )
-#' d.orig <- as.matrix( dist( data ) )
-#' d.mixed <- as.matrix( mdist( data ) )
-#' all.equal( d.orig, d.mixed )
 #'
 #' @author Frank M.T.A. Busing
 #' @importFrom stats as.dist

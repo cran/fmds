@@ -21,12 +21,6 @@ additive constant
 added to the dissimilarities, makes the data true Euclidean distances.
 Note: NA's are not allowed.
 }
-\examples{
-delta <- as.matrix( eurodist )
-ac <- addconst( delta, faster = TRUE, error.check = TRUE )
-print( ac )
-
-}
 \references{
 Cailliez (1983)
 }

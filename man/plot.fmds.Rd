@@ -30,9 +30,3 @@ none
 \description{
 Plot function for a \code{fmds} object. The plot shows the result of \code{fmds}.
 }
-\examples{
-delta <- as.matrix( eurodist )
-r <- fastmds( delta = delta )
-plot( r )
-
-}

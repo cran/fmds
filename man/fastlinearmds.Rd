@@ -94,10 +94,7 @@ n <- nrow( delta )
 w <- 1 - diag( n )
 p <- 2
 z <- matrix( runif( n * p ), n, p )
-r <- fastlinearmds( delta, w, p, z, echo = TRUE )
-summary( r )
-print( r )
-plot( r )
+#r <- fastlinearmds( delta, w, p, z, echo = TRUE )
 
 }
 \references{

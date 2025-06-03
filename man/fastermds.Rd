@@ -17,7 +17,8 @@ fastermds(
   interval = FALSE,
   NCYCLES = 32,
   MINRATE = 0.01,
-  error.check = FALSE
+  error.check = FALSE,
+  test = 0
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ fastermds(
 \item{MINRATE}{criterion rate of convergence (default = 0.01).}
 
 \item{error.check}{extensive validity check input parameters (default = FALSE).}
+
+\item{test}{indicates which test is applied.}
 }
 \value{
 n by p matrix with final coordinates.
@@ -68,8 +71,7 @@ m <- 10
 delta <- as.matrix( dist( matrix( runif( n * m ), n, m ) ) )
 p <- 2
 zinit <- matrix( runif( n * p ), n, p )
-r <- fastermds( delta = delta, p = p, z = zinit, error.check = TRUE )
-head( r )
+# r <- fastermds( delta = delta, p = p, z = zinit, error.check = TRUE )
 
 }
 \references{

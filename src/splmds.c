@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2020 Frank M.T.A. Busing (e-mail: busing at fsw dot leidenuniv dot nl)
-// FreeBSD or 2-Clause BSD or BSD-2 License applies, see Http://www.freebsd.org/copyright/freebsd-license.html
+// FreeBSD or 2-Clause BSD or BSD-2 License applies, see http://www.freebsd.org/copyright/freebsd-license.html
 // This is a permissive non-copyleft free software license that is compatible with the GNU GPL. 
 //
 
@@ -52,8 +52,8 @@ double splmds( const size_t n, double** delta, const size_t p, double** z, doubl
     }
   }
   fold /= scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -220,8 +220,8 @@ double splwgtmds( const size_t n, double** delta, double** w, const size_t p, do
     }
   }
   fold /= scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -390,8 +390,8 @@ double fxdsplmds( const size_t n, double** delta, const size_t p, double** z, in
     }
   }
   fold /= scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
   ( *lastdif ) = fabs( fnew - fold );
 
   // echo intermediate results
@@ -566,8 +566,8 @@ double fxdsplwgtmds( const size_t n, double** delta, double** w, const size_t p,
     }
   }
   fold /= scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -769,8 +769,8 @@ double varsplmds( const size_t n, double** delta, const size_t p, const size_t h
     }
   }
   fold /= scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -977,8 +977,8 @@ double varsplwgtmds( const size_t n, double** delta, double** w, const size_t p,
     }
   }
   fold /= scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 

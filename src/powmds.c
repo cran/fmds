@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2020 Frank M.T.A. Busing (e-mail: busing at fsw dot leidenuniv dot nl)
-// FreeBSD or 2-Clause BSD or BSD-2 License applies, see Http://www.freebsd.org/copyright/freebsd-license.html
+// FreeBSD or 2-Clause BSD or BSD-2 License applies, see http://www.freebsd.org/copyright/freebsd-license.html
 // This is a permissive non-copyleft free software license that is compatible with the GNU GPL. 
 //
 
@@ -40,8 +40,8 @@ double powmds( const size_t n, double** delta, const size_t p, double** z, doubl
   dcopy( n * n, &delta[1][1], 1, &gamma[1][1], 1 );
   double scale = dssq( n * n, &gamma[1][1], 1 );
   double fold = dsse( n * n, &gamma[1][1], 1, &d[1][1], 1 ) / scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -185,8 +185,8 @@ double powwgtmds( const size_t n, double** delta, double** w, const size_t p, do
   dcopy( n * n, &delta[1][1], 1, &gamma[1][1], 1 );
   double scale = dwssq( n * n, &gamma[1][1], 1, &w[1][1], 1 );
   double fold = dwsse( n * n, &gamma[1][1], 1, &d[1][1], 1, &w[1][1], 1 ) / scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -333,8 +333,8 @@ double fxdpowmds( const size_t n, double** delta, const size_t p, double** z, in
   dcopy( n * n, &delta[1][1], 1, &gamma[1][1], 1 );
   double scale = dssq( n * n, &gamma[1][1], 1 );
   double fold = dsse( n * n, &gamma[1][1], 1, &d[1][1], 1 ) / scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -484,8 +484,8 @@ double fxdpowwgtmds( const size_t n, double** delta, double** w, const size_t p,
   dcopy( n * n, &delta[1][1], 1, &gamma[1][1], 1 );
   double scale = dwssq( n * n, &gamma[1][1], 1, &w[1][1], 1 );
   double fold = dwsse( n * n, &gamma[1][1], 1, &d[1][1], 1, &w[1][1], 1 ) / scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -665,8 +665,8 @@ double varpowmds( const size_t n, double** delta, const size_t p, const size_t h
   dcopy( n * n, &delta[1][1], 1, &gamma[1][1], 1 );
   double scale = dssq( n * n, &gamma[1][1], 1 );
   double fold = dsse( n * n, &gamma[1][1], 1, &d[1][1], 1 ) / scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -849,8 +849,8 @@ double varpowwgtmds( const size_t n, double** delta, double** w, const size_t p,
   dcopy( n * n, &delta[1][1], 1, &gamma[1][1], 1 );
   double scale = dwssq( n * n, &gamma[1][1], 1, &w[1][1], 1 );
   double fold = dwsse( n * n, &gamma[1][1], 1, &d[1][1], 1, &w[1][1], 1 ) / scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -1012,7 +1012,6 @@ void powmds_unittest( long seed )
 
   powwgtmds( n, delta, w, p, z, d, MAXITER, 0.0, 0.000000000001, &lastiter, &lastdif, true );
   printscalar( "elapsed for powwgtmds", getelapsedtime( tm ) );
-
 
   freematrix( delta );
   freematrix( w );

@@ -62,8 +62,7 @@ extern void Cvarmds( int* rn, double* rdelta, int* rp, int* rh, double* rq, doub
 extern void Cvarmdsneg( int* rn, double* rdelta, int* rp, int* rh, double* rq, double* rb, double* rd, int* rmaxiter, double* rfdif, double* rzdif, double* rfvalue, int* recho );
 extern void Cvarwgtmds( int* rn, double* rdelta, double* rw, int* rp, int* rh, double* rq, double* rb, double* rd, int* rmaxiter, double* rfdif, double* rzdif, double* rfvalue, int* recho );
 extern void Cvarwgtmdsneg( int* rn, double* rdelta, double* rw, int* rp, int* rh, double* rq, double* rb, double* rd, int* rmaxiter, double* rfdif, double* rzdif, double* rfvalue, int* recho );
-extern void Cpenvarmds( int* rn, double* rdelta, int* rp, int* rh, double* rq, double* rb, double* rrlambda, double* rllambda, double* rglambda, double* rd, int* rmaxiter, double* rfdif, double* rzdif, double* rfvalue, int* recho );
-
+extern void Cpenvarmds( int* rn, double* rdelta, int* rp, int* rh, double* rq, double* rb, double* rlambda, double* ralpha, int* rgrouped, double* rd, int* rmaxiter, double* rfdif, double* rzdif, double* rfvalue, int* recho );
 
 extern void Cordmds( int* rn, double* rdelta, int* rp, double* rz, double* rd, int* rapproach, int* rmaxiter, double* rfdif, double* rzdif, double* rfvalue, int* recho );
 extern void Cordwgtmds( int* rn, double* rdelta, double* rw, int* rp, double* rz, double* rd, int* rapproach, int* rmaxiter, double* rfdif, double* rzdif, double* rfvalue, int* recho );
@@ -119,6 +118,7 @@ extern void Csimmds3local( int* rn, int* rm, double* rx, int* rp, double* rz, do
 extern void Csimfxdmds1local( int* rn, double* rdist, int* rp, double* rz, int* rfz, double* rboundary, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimfxdmds2local( int* rn, double* rdelta, int* rp, double* rz, int* rfz, double* rboundary, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimfxdmds3local( int* rn, int* rm, double* rx, int* rp, double* rz, int* rfz, double* rboundary, int* rnepochs, double* rminrate, int* rseed );
+extern void Csimlinmds2( int* rn, double* rdelta, double* ra, double* rb, int* rp, double* rz, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimmds2interval( int* rn, double* rdelta, int* rp, double* rz, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimfxdmds2interval( int* rn, double* rdelta, int* rp, double* rz, int* rfz, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimmds2localinterval( int* rn, double* rdelta, int* rp, double* rz, double* rboundary, int* rnepochs, double* rminrate, int* rseed );
@@ -139,8 +139,11 @@ extern void Csimwgtmds2interval( int* rn, double* rdelta, double* rw, int* rp, d
 extern void Csimfxdwgtmds2interval( int* rn, double* rdelta, double* rw, int* rp, double* rz, int* rfz, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimwgtmds2localinterval( int* rn, double* rdelta, double* rw, int* rp, double* rz, double* rboundary, int* rnepochs, double* rminrate, int* rseed );
 extern void Csimfxdwgtmds2localinterval( int* rn, double* rdelta, double* rw, int* rp, double* rz, int* rfz, double* rboundary, int* rnepochs, double* rminrate, int* rseed );
-extern void Csimlmkmds3( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rnlandmarks, int* rseed );
-extern void Csimlinmds2( int* rn, double* rdelta, int* rp, double* rz, int* rnepochs, double* rminrate, int* rseed );
+
+extern void Csimmds3bsc( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rseed );
+extern void Csimmds3ave( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rseed );
+extern void Csimmds3mom( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rnesterov, int* rseed );
+extern void Csimmds3adm( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rnesterov, int* rseed );
 
 
 
@@ -231,6 +234,7 @@ static const R_CMethodDef CEntries[] = {
   {"Csimfxdmds1",      ( DL_FUNC ) &Csimfxdmds1,         8},
   {"Csimfxdmds2",      ( DL_FUNC ) &Csimfxdmds2,         8},
   {"Csimfxdmds3",      ( DL_FUNC ) &Csimfxdmds3,         9},
+  {"Csimlinmds2",      ( DL_FUNC ) &Csimlinmds2,         9},
   {"Csimmds1local",      ( DL_FUNC ) &Csimmds1local,         8},
   {"Csimmds2local",      ( DL_FUNC ) &Csimmds2local,         8},
   {"Csimmds3local",      ( DL_FUNC ) &Csimmds3local,         9},
@@ -242,8 +246,6 @@ static const R_CMethodDef CEntries[] = {
   {"Csimfxdmds2interval",      ( DL_FUNC ) &Csimfxdmds2interval,         8},
   {"Csimmds2localinterval",      ( DL_FUNC ) &Csimmds2localinterval,         8},
   {"Csimfxdmds2localinterval",      ( DL_FUNC ) &Csimfxdmds2localinterval,         9},
-
-  {"Csimlinmds2",      ( DL_FUNC ) &Csimlinmds2,         7},
 
   {"Csimwgtmds1",      ( DL_FUNC ) &Csimwgtmds1,         8},
   {"Csimwgtmds2",      ( DL_FUNC ) &Csimwgtmds2,         8},
@@ -264,7 +266,10 @@ static const R_CMethodDef CEntries[] = {
   {"Csimwgtmds2localinterval",      ( DL_FUNC ) &Csimwgtmds2localinterval,         9},
   {"Csimfxdwgtmds2localinterval",      ( DL_FUNC ) &Csimfxdwgtmds2localinterval,         10},
 
-  {"Csimlmkmds3",      ( DL_FUNC ) &Csimlmkmds3,         7},
+  {"Csimmds3bsc",      ( DL_FUNC ) &Csimmds3bsc,         8},
+  {"Csimmds3ave",      ( DL_FUNC ) &Csimmds3ave,         8},
+  {"Csimmds3mom",      ( DL_FUNC ) &Csimmds3mom,         9},
+  {"Csimmds3adm",      ( DL_FUNC ) &Csimmds3adm,         9},
 
   {NULL, NULL, 0}
 };

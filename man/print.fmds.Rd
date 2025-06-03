@@ -17,3 +17,6 @@ none
 \description{
 \code{print} produces output for fmds object.
 }
+\author{
+Frank M.T.A. Busing
+}

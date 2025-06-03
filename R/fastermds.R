@@ -22,6 +22,7 @@
 #' @param NCYCLES number of cycles taken by the algorithm (default = 32).
 #' @param MINRATE criterion rate of convergence (default = 0.01).
 #' @param error.check extensive validity check input parameters (default = FALSE).
+#' @param test indicates which test is applied.
 #'
 #' @return n by p matrix with final coordinates.
 #'
@@ -33,8 +34,7 @@
 #' delta <- as.matrix( dist( matrix( runif( n * m ), n, m ) ) )
 #' p <- 2
 #' zinit <- matrix( runif( n * p ), n, p )
-#' r <- fastermds( delta = delta, p = p, z = zinit, error.check = TRUE )
-#' head( r )
+#' # r <- fastermds( delta = delta, p = p, z = zinit, error.check = TRUE )
 #'
 #' @author Frank M.T.A. Busing
 #'
@@ -45,7 +45,7 @@
 fastermds <- function( delta = NULL,                                        # dissimilarity matrix
                        lower = NULL,                                        # lower-triangular part of dissimilarity matrix
                        data = NULL,                                         # multivariate data matrix
-                       w = NULL,                                            # format matches data format
+                       w = NULL,                                            # format matches data format, but for data its a vector
                        p = 2,                                               # dimensionality (default = 2)
                        z = NULL,                                            # initial coordinates matrix must be provided
                        fixed = NULL,                                        # matrix indicating free (FALSE) or fixed (TRUE) coordinates
@@ -54,7 +54,8 @@ fastermds <- function( delta = NULL,                                        # di
                        interval = FALSE,                                    # interval mds is off by default
                        NCYCLES = 32,                                        # number of algorithmic cycles
                        MINRATE = 0.01,                                      # minimum learning rate after NCYCLES
-                       error.check = FALSE )                                # checks at the expense of runtime
+                       error.check = FALSE,                                # checks at the expense of runtime
+                       test = 0 )
 {
   DELTA <- !is.null( delta )
   LOWER <- !is.null( lower )
@@ -87,6 +88,16 @@ fastermds <- function( delta = NULL,                                        # di
   # initialization
   seed <- as.integer( runif( 1, 1, as.integer( .Machine$integer.max ) ) )
 
+  # test
+  if ( test != 0 ) {
+    if ( test == 1 ) result <- ( .C( "Csimmds3bsc", n=as.integer(n), m=as.integer(m), data=as.double(t(data)), p=as.integer(p), z=as.double(t(z)), NCYCLES=as.integer(NCYCLES), MINRATE=as.double(MINRATE), seed=as.integer( seed ), PACKAGE = "fmds"   ) )
+    if ( test == 2 ) result <- ( .C( "Csimmds3ave", n=as.integer(n), m=as.integer(m), data=as.double(t(data)), p=as.integer(p), z=as.double(t(z)), NCYCLES=as.integer(NCYCLES), MINRATE=as.double(MINRATE), seed=as.integer( seed ), PACKAGE = "fmds"   ) )
+    if ( test == 3 ) result <- ( .C( "Csimmds3mom", n=as.integer(n), m=as.integer(m), data=as.double(t(data)), p=as.integer(p), z=as.double(t(z)), NCYCLES=as.integer(NCYCLES), MINRATE=as.double(MINRATE), nesterov=as.integer(0), seed=as.integer( seed ), PACKAGE = "fmds"   ) )
+    if ( test == 4 ) result <- ( .C( "Csimmds3adm", n=as.integer(n), m=as.integer(m), data=as.double(t(data)), p=as.integer(p), z=as.double(t(z)), NCYCLES=as.integer(NCYCLES), MINRATE=as.double(MINRATE), nesterov=as.integer(0), seed=as.integer( seed ), PACKAGE = "fmds"   ) )
+    cat( "last epoch      = ", result$NCYCLES, "\n" )
+    cat( "last difference = ", result$MINRATE, "\n" )
+  }
+  else
   # .C execution
   if ( is.null( w ) ) {
     if ( is.null( fixed ) ) {

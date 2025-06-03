@@ -32,12 +32,6 @@
 #'             Ter Braak (1992)
 #'             Borg and Groenen (2005)
 #'
-#' @examples
-#' delta <- as.matrix( eurodist )
-#' p <- 2
-#' r <- pcoa( delta = delta, p = p, error.check = TRUE )
-#' head( r )
-#' plot( r )
 #'
 #' @author Frank M.T.A. Busing
 #'

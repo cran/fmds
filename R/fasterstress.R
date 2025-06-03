@@ -19,10 +19,8 @@
 #' data <- matrix( runif( n * m ), n, m )
 #' p <- 2
 #' zinit <- matrix( runif( n * p ), n, p )
-#' r <- fastermds( data = data, p = p, z = zinit )
-#' s <- fasterstress( data = data, z = r )
-#' print( s$n.stress )
-#' print( s$se )
+#' # r <- fastermds( data = data, p = p, z = zinit )
+#' # s <- fasterstress( data = data, z = r )
 #'
 #' @author Frank M.T.A. Busing
 #'

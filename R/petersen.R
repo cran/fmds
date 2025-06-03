@@ -10,16 +10,6 @@
 #' @references Busing (2025).
 #'             A Simple Population Size Estimator for Local Minima Applied to Multidimensional Scaling.
 #'
-#' @examples
-#' seed <- 1041245
-#' set.seed( seed )
-#' population <- c( rep( 1:200, 10 ), rep( 201:400, 40 ) )
-#' length( population )
-#' length( unique( population ) )
-#' s1 <- sample( population, 500 )
-#' s2 <- sample( population, 500 )
-#' Nhat <- petersen( s1, s2 )
-#' print( Nhat )
 #'
 #' @author Frank M.T.A. Busing
 #' @export

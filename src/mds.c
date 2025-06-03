@@ -37,8 +37,8 @@ double mds( const size_t n, double** delta, const size_t p, double** z, double**
   dcopy( n * n, &delta[1][1], 1, &gamma[1][1], 1 );
   double scale = dssq( n * n, &gamma[1][1], 1 );
   double fold = dsse( n * n, &gamma[1][1], 1, &d[1][1], 1 ) / scale;
-  double fhalf = 0.0;
-  double fnew = 0.0;
+  double fhalf = fold;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -167,7 +167,7 @@ double mdsneg( const size_t n, double** delta, const size_t p, double** z, doubl
   // update distances and calculate normalized stress
   euclidean1( n, p, z, d );
   double fold = dsse( n * n, &delta[1][1], 1, &d[1][1], 1 ) / scale;
-  double fnew = 0.0;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -306,7 +306,7 @@ double wgtmds( const size_t n, double** delta, double** w, const size_t p, doubl
   // update distances and calculate normalized stress
   euclidean1( n, p, z, d );
   double fold = dwsse( n * n, &delta[1][1], 1, &d[1][1], 1, &w[1][1], 1 ) / scale;
-  double fnew = 0.0;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -443,7 +443,7 @@ double wgtmdsneg( const size_t n, double** delta, double** w, const size_t p, do
   // update distances and calculate normalized stress
   euclidean1( n, p, z, d );
   double fold = dwsse( n * n, &delta[1][1], 1, &d[1][1], 1, &w[1][1], 1 ) / scale;
-  double fnew = 0.0;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -573,7 +573,7 @@ double fxdmds( const size_t n, double** delta, const size_t p, double** z, int**
   // update distances and calculate normalized stress
   euclidean1( n, p, z, d );
   double fold = dsse( n * n, &delta[1][1], 1, &d[1][1], 1 ) / scale;
-  double fnew = 0.0;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -690,7 +690,7 @@ double fxdmdsneg( const size_t n, double** delta, const size_t p, double** z, in
   // update distances and calculate normalized stress
   euclidean1( n, p, z, d );
   double fold = dsse( n * n, &delta[1][1], 1, &d[1][1], 1 ) / scale;
-  double fnew = 0.0;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -833,7 +833,7 @@ double fxdwgtmds( const size_t n, double** delta, double** w, const size_t p, do
   // update distances and calculate normalized stress
   euclidean1( n, p, z, d );
   double fold = dwsse( n * n, &delta[1][1], 1, &d[1][1], 1, &w[1][1], 1 ) / scale;
-  double fnew = 0.0;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -971,7 +971,7 @@ double fxdwgtmdsneg( const size_t n, double** delta, double** w, const size_t p,
   // update distances and calculate normalized stress
   euclidean1( n, p, z, d );
   double fold = dwsse( n * n, &delta[1][1], 1, &d[1][1], 1, &w[1][1], 1 ) / scale;
-  double fnew = 0.0;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -1122,7 +1122,7 @@ double varmds( const size_t n, double** delta, const size_t p, const size_t h, d
   // update distances and calculate normalized stress
   euclidean1( n, p, z, d );
   double fold = dsse( n * n, &delta[1][1], 1, &d[1][1], 1 ) / scale;
-  double fnew = 0.0;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -1270,7 +1270,7 @@ double varmdsneg( const size_t n, double** delta, const size_t p, const size_t h
   // update distances and calculate normalized stress
   euclidean1( n, p, z, d );
   double fold = dsse( n * n, &delta[1][1], 1, &d[1][1], 1 ) / scale;
-  double fnew = 0.0;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -1454,7 +1454,7 @@ double varwgtmds( const size_t n, double** delta, double** w, const size_t p, co
   // update distances and calculate normalized stress
   euclidean1( n, p, z, d );
   double fold = dwsse( n * n, &delta[1][1], 1, &d[1][1], 1, &w[1][1], 1 ) / scale;
-  double fnew = 0.0;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -1628,7 +1628,7 @@ double varwgtmdsneg( const size_t n, double** delta, double** w, const size_t p,
   // update distances and calculate normalized stress
   euclidean1( n, p, z, d );
   double fold = dwsse( n * n, &delta[1][1], 1, &d[1][1], 1, &w[1][1], 1 ) / scale;
-  double fnew = 0.0;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 
@@ -1807,7 +1807,7 @@ double penvarmds( const size_t n, double** delta, const size_t p, const size_t h
     fgroup += sqrt( dssq( p, &b[i][1], 1 ) );
   }
   double fold = dsse( n * n, &delta[1][1], 1, &d[1][1], 1 ) + rlambda * fridge + llambda * flasso + glambda * fgroup;
-  double fnew = 0.0;
+  double fnew = fold;
 
   // echo intermediate results
   if ( echo == true ) echoprogress( 0, fold, fold, fold ); 

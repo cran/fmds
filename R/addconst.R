@@ -12,10 +12,6 @@
 #'
 #' @references Cailliez (1983)
 #'
-#' @examples
-#' delta <- as.matrix( eurodist )
-#' ac <- addconst( delta, faster = TRUE, error.check = TRUE )
-#' print( ac )
 #'
 #' @author Frank M.T.A. Busing
 #' @export

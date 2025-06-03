@@ -12,11 +12,6 @@
 #' @return if ( extended == FALSE ): outlier scores; else: weights matrix
 #' @references Barroso and Busing (2025).
 #'
-#' @examples
-#' data <- as.matrix( iris[,1:4] )
-#' distances <- dist( data )
-#' scores <- rdop( data = data )
-#' weights <- rdop( distances, extended = TRUE )
 #'
 #' @author Frank M.T.A. Busing
 #'

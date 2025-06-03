@@ -87,19 +87,6 @@ The dissimilarities are may contain negative values, the weights may not.
 The configuration is either unrestricted, (partly) fixed, or a linear combination of independent variables.
 The dissimilarities are optimally monotone transformed.
 }
-\examples{
-data( "colors" )
-delta <- as.matrix( colors^3 )
-n <- nrow( delta )
-w <- 1 - diag( n )
-p <- 2
-zinit <- matrix( runif( n * p ), n, p )
-r <- fastordinalmds( delta, w, p, z = zinit, echo = TRUE )
-summary( r )
-print( r )
-plot( r )
-
-}
 \references{
 de Leeuw, J., and Heiser, W. J. (1980). Multidimensional scaling with restrictions on the configuration.
             In P.R. Krishnaiah (Ed.), Multivariate analysis (Vol. 5, pp. 501–522).

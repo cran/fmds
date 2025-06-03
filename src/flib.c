@@ -2579,13 +2579,16 @@ bool* getbvector( const size_t nr, const bool c )
   return ptr;
 } // getbvector
 
+static void __attribute__ ((noinline)) freebool( bool *a ) { free( a ); }
+
 void freebvector( bool* a )
 // de-allocates vector space from the heap
 {
-  _Pragma("GCC diagnostic push")
-  _Pragma("GCC diagnostic ignored \"-Wfree-nonheap-object\"")
-  free( ++a );
-  _Pragma("GCC diagnostic pop")
+  if ( a == NULL ) return;
+  a++;
+  freebool( a );
+  a = 0;
+		 
 } // freebvector
 
 int* getivector( const size_t nr, const int c )
@@ -2599,15 +2602,17 @@ int* getivector( const size_t nr, const int c )
   return ptr;
 } // getivector
 
+static void __attribute__ ((noinline)) freeint( int *a ) { free( a ); }
+
 void freeivector( int* a )
 // de-allocates vector space from the heap
 {
-  _Pragma("GCC diagnostic push")
-  _Pragma("GCC diagnostic ignored \"-Wfree-nonheap-object\"")
-  free( ++a );
-  _Pragma("GCC diagnostic pop")
+  if ( a == NULL ) return;
+  a++;
+														 
+  freeint( a );
+  a = 0;
 } // freeivector
-
 size_t* getvector_t( const size_t nr, const size_t c )
 // allocates vector space on the heap
 {
@@ -2619,15 +2624,17 @@ size_t* getvector_t( const size_t nr, const size_t c )
   return ptr;
 } // getvector_t
 
+static void __attribute__ ((noinline)) freesize_t( size_t *a ) { free( a ); }
+
 void freevector_t( size_t* a )
 // de-allocates vector space from the heap
 {
-  _Pragma("GCC diagnostic push")
-  _Pragma("GCC diagnostic ignored \"-Wfree-nonheap-object\"")
-  free( ++a );
-  _Pragma("GCC diagnostic pop")
+  if ( a == NULL ) return;
+  a++;
+  freesize_t( a );
+  a = 0;
+							 
 } // freevector_t
-
 double* getvector( const size_t nr, const double c )
 // allocates vector space on the heap
 {
@@ -2639,17 +2646,18 @@ double* getvector( const size_t nr, const double c )
   return ptr;
 } // getvector
 
+static void __attribute__ ((noinline)) freedouble( double *a ) { free( a ); }
+
 void freevector( double* a )
 // de-allocates vector space from the heap
 {
-  if ( a == 0 ) return;
-  _Pragma("GCC diagnostic push")
-  _Pragma("GCC diagnostic ignored \"-Wfree-nonheap-object\"")
-  free( ++a );
-  _Pragma("GCC diagnostic pop")
+  if ( a == NULL ) return;
+  a++;
+  freedouble( a );
+			  
+							 
   a = 0;
 } // freevector
-
 int** getimatrix( const size_t nr, const size_t nc, const int c )
 // allocates matrix space on the heap
 {
@@ -2667,17 +2675,19 @@ int** getimatrix( const size_t nr, const size_t nc, const int c )
   return ptr;
 } // getimatrix
 
+static void __attribute__ ((noinline)) freeintint( int **a ) { free( a ); }
+
 void freeimatrix( int** a )
 // de-allocates matrix space from the heap
 {
-  if ( a == 0 ) return;
-  _Pragma("GCC diagnostic push")
-  _Pragma("GCC diagnostic ignored \"-Wfree-nonheap-object\"")
-  free( ++a[1] ); 
-  free( ++a );
-  _Pragma("GCC diagnostic pop")
+  if ( a == NULL ) return;
+  a[1]++;
+														 
+  freeint( a[1] );
+  a++;
+  freeintint( a );
+  a = 0;
 } // freeimatrix
-
 size_t** getmatrix_t( const size_t nr, const size_t nc, const size_t c )
 // allocates matrix space on the heap
 {
@@ -2695,16 +2705,19 @@ size_t** getmatrix_t( const size_t nr, const size_t nc, const size_t c )
   return ptr;
 } // getmatrix_t
 
+static void __attribute__ ((noinline)) freesize_tsize_t( size_t **a ) { free( a ); }
+
 void freematrix_t( size_t** a )
 // de-allocates matrix space from the heap
 {
-  _Pragma("GCC diagnostic push")
-  _Pragma("GCC diagnostic ignored \"-Wfree-nonheap-object\"")
-  free( ++a[1] ); 
-  free( ++a );
-  _Pragma("GCC diagnostic pop")
+  if ( a == NULL ) return;
+  a[1]++;
+														 
+  freesize_t( a[1] );
+  a++;
+  freesize_tsize_t( a );
+  a = 0;
 } // freematrix_t
-
 double** getmatrix( const size_t nr, const size_t nc, const double c )
 // allocates matrix space on the heap
 {
@@ -2722,17 +2735,19 @@ double** getmatrix( const size_t nr, const size_t nc, const double c )
   return ptr;
 } // getmatrix
 
+static void __attribute__ ((noinline)) freedoubledouble( double **a ) { free( a ); }
+
 void freematrix( double** a )
 // de-allocates matrix space from the heap
 {
-  if ( a == 0 ) return;
-  _Pragma("GCC diagnostic push")
-  _Pragma("GCC diagnostic ignored \"-Wfree-nonheap-object\"")
-  free( ++a[1] ); 
-  free( ++a );
-  _Pragma("GCC diagnostic pop")
+  if ( a == NULL ) return;
+  a[1]++;
+														 
+  freedouble( a[1] );
+  a++;
+  freedoubledouble( a );
+  a = 0;
 } // freematrix
-
 double ***gettensor( const size_t ns, const size_t nr, const size_t nc, const double c )
 // allocates tensor space on the heap
 {
@@ -2756,18 +2771,21 @@ double ***gettensor( const size_t ns, const size_t nr, const size_t nc, const do
   return ptr;
 } // gettensor
 
+static void __attribute__ ((noinline)) freedoubledoubledouble( double ***a ) { free( a ); }
+
 void freetensor( double*** a )
 // de-allocates tensor space from the heap
 {
-  if ( a == 0 ) return;
-  _Pragma("GCC diagnostic push")
-  _Pragma("GCC diagnostic ignored \"-Wfree-nonheap-object\"")
-  free( ++a[1][1] ); 
-  free( ++a[1] ); 
-  free( ++a );
-  _Pragma("GCC diagnostic pop")
+  if ( a == NULL ) return;
+  a[1][1]++;
+														 
+  freedouble( a[1][1] ); 
+  a[1]++;
+  freedoubledouble( a[1] ); 
+  a++;
+  freedoubledoubledouble( a );
+  a = 0;
 } // freetensor
-
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // linear algebra functions
 //
@@ -5951,18 +5969,18 @@ static void getknotsequence( const size_t n, double* x, double* w, const size_t 
 }
 
 static double* extendedknotsequence( const size_t ninner, double* iknots, double* boundaries, const size_t degree )
+// use int to avoid __builtin_memcpy warning [-Wstringop-overflow=]
 {
   const double xmin = boundaries[1];
   const double xmax = boundaries[2];
-  const size_t order = degree + 1;
+  const int order = ( int )( degree + 1 );
   double* eknots = getvector( ninner + 2 * order, 0.0 );
-  size_t t = 1;
-  for ( size_t k = 1; k <= order; k++, t++ ) eknots[t] = xmin;
-  for ( size_t k = 1; k <= ninner; k++, t++ ) eknots[t] = iknots[k];
-  for ( size_t k = 1; k <= order; k++, t++ ) eknots[t] = xmax;
+  int t = 1;
+  for ( int k = 1; k <= order; k++, t++ ) eknots[t] = xmin;
+  for ( int k = 1; k <= ( int )( ninner ); k++, t++ ) eknots[t] = iknots[k];
+  for ( int k = 1; k <= order; k++, t++ ) eknots[t] = xmax;
   return( eknots );
 } // extendedknotsequence
-
 static size_t bisect( const size_t nknots, double* knots, const double xi )
 {
   size_t l = 1;
@@ -7595,6 +7613,22 @@ void flib_unittest( long seed )
   printstring( "\n", "==============================================================\n" );
   printstring( "started unit test flib at ", dt );
   printstring( "", "==============================================================\n" );
+
+  // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  // speed check two euclidean distance functions
+  {
+    size_t n = 100;
+    size_t m = 1000000;
+    double* a = getvector( n * m, 0.0 );
+    randomize( &seed );
+    for ( size_t i = 1; i <= n * m; i++ ) a[i] = nextdouble( );
+  
+    double d = 0.0;
+    size_t tmr = setstarttime();
+    for ( size_t i = 0; i < n; i += 2 * m ) d = fdist1( m, &a[i], &a[i+m] );
+    d *= d;
+    printscalar( "elapsed for fdist1", getelapsedtime( tmr ) );
+  }
 
   // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // speed check two random number generators

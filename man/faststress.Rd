@@ -33,24 +33,6 @@ n.stress normalized stress value
 \code{faststress} calculates value for normalized stress with different input parameters.
 Distances d are optimally scaled.
 }
-\examples{
-n <- 100
-m <- 10
-data <- matrix( runif( n * m ), n, m )
-d <- dist( data )
-lower <- as.vector( d )
-delta <- as.matrix( d )
-p <- 2
-zinit <- matrix( runif( n * p ), n, p )
-r <- fastmds( delta = delta, p = p, z = zinit )
-faststress( data = data, z = r$coordinates )
-faststress( data = data, d = r$distances )
-faststress( delta = delta, z = r$coordinates )
-faststress( data = data, d = r$distances )
-faststress( lower = lower, z = r$coordinates )
-faststress( lower = lower, d = r$distances )
-
-}
 \author{
 Frank M.T.A. Busing
 }

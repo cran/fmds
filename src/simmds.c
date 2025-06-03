@@ -371,6 +371,104 @@ void Csimfxdmds3( int* rn, int* rm, double* rx, int* rp, double* rz, int* rfz, i
   }
 } // Csimmds3
 
+void Csimlinmds2( int* rn, double* rdelta, double* ra, double* rb, int* rp, double* rz, int* rnepochs, double* rminrate, int* rseed )
+{
+  // transfer to C
+  const size_t n = *rn;
+  const size_t p = *rp;
+  const size_t NEPOCHS = *rnepochs;
+  const double MINRATE = *rminrate;
+  long xseed = ( long )( *rseed );
+  randomize( &xseed );
+
+  double* __restrict pdelta = &rdelta[0];
+  double* __restrict pz = &rz[0];
+  
+  // set constants
+  const double EPS = DBL_EPSILON;
+  const double MAXRATE = 0.5;
+  const size_t NSTEPS = 16;
+
+  double XMIN = DBL_MAX;
+  for ( size_t i = 1, k = 1; i < n; i++, k++ ) for ( size_t j = 0; j < n; j++, k++ ) if ( pdelta[k] < XMIN ) XMIN = pdelta[k];
+  double cura = *ra;
+  double curb = *rb;
+  double wsumx = 0.0;
+  double wsumy = 0.0;
+  double wssqx = 0.0;
+  double cross = 0.0;
+
+  printscalar( "current a", cura );
+  printscalar( "current b", curb );
+
+  // start main loop
+  for ( size_t epoch = 1, t = 1; epoch <= NEPOCHS; epoch++ ) {
+
+    const double eta = 0.5 * ( MINRATE + MAXRATE ) + 0.5 * ( MAXRATE - MINRATE ) * cos( M_PI * epoch / NEPOCHS );
+    const double ceta = 1.0 - eta;
+
+    // start steps loop
+    for( size_t step = 1; step <= NSTEPS; step++, t++ ) for ( size_t i = 0; i < n; i++ ) {
+      wsumx = wsumy = wssqx = cross = 0.0;
+
+      const size_t idx1 = i;
+      size_t idx2 = nextsize_t() % n;
+      while ( idx2 == idx1 ) idx2 = nextsize_t() % n;
+      size_t idx3 = nextsize_t() % n;
+      while ( idx3 == idx1 || idx3 == idx2 ) idx3 = nextsize_t() % n;
+      const size_t idx1p = idx1 * p;
+      const size_t idx2p = idx2 * p;
+      const size_t idx3p = idx3 * p;
+      const double d12 = fdist1( p, &pz[idx1p], &pz[idx2p] );
+      const double d13 = fdist1( p, &pz[idx1p], &pz[idx3p] );
+      const double d23 = fdist1( p, &pz[idx2p], &pz[idx3p] );
+      const double delta12 = pdelta[IJ2K( n, idx1, idx2 )];
+      const double delta13 = pdelta[IJ2K( n, idx3, idx1 )];
+      const double delta23 = pdelta[IJ2K( n, idx2, idx3 )];
+
+      wsumx += ( delta12 - XMIN ) + ( delta13 - XMIN ) + ( delta23 - XMIN );
+      wsumy += d12 + d13 + d23;
+      wssqx += ( delta12 - XMIN ) * ( delta12 - XMIN ) + ( delta13 - XMIN ) * ( delta13 - XMIN ) + ( delta23 - XMIN ) * ( delta23 - XMIN );
+      cross += d12 * ( delta12 - XMIN ) + d13 * ( delta13 - XMIN ) + d23 * ( delta23 - XMIN );
+
+      const double gamma12 = cura + curb * delta12;
+      const double gamma13 = cura + curb * delta13;
+      const double gamma23 = cura + curb * delta23;
+      const double b12 = ( d12 < EPS ? 0.0 : gamma12 / d12 );
+      const double b13 = ( d13 < EPS ? 0.0 : gamma13 / d13 );
+      const double b23 = ( d23 < EPS ? 0.0 : gamma23 / d23 );
+      for ( size_t k = 0; k < p; k++ ) {
+        const double z1 = pz[idx1p + k];
+        const double z2 = pz[idx2p + k];
+        const double z3 = pz[idx3p + k];
+        pz[idx1p + k] = ceta * z1 + 0.5 * eta * ( b12 * ( z1 - z2 ) + b13 * ( z1 - z3 ) + z2 + z3 );
+        pz[idx2p + k] = ceta * z2 + 0.5 * eta * ( b12 * ( z2 - z1 ) + b23 * ( z2 - z3 ) + z1 + z3 );
+        pz[idx3p + k] = ceta * z3 + 0.5 * eta * ( b13 * ( z3 - z1 ) + b23 * ( z3 - z2 ) + z1 + z2 );
+      }
+    }
+
+    const double sumw = ( double )( 3 * NSTEPS * n );
+    const double work = wssqx * sumw - wsumx * wsumx;
+    double newb = ( isnotzero( work ) ? ( cross * sumw - wsumx * wsumy ) / work : 0.0 );
+    if ( newb < 0.0 ) newb = 0.0;
+    double newa = ( wsumy - newb * wsumx ) / sumw;
+    if ( newa < 0.0 ) { 
+      newa = 0.0;
+      newb = cross / wssqx;
+      if ( newb < 0.0 ) newb = 0.0;
+    }
+    newa -= newb * XMIN;
+
+    cura = ceta * cura + eta * newa;
+    curb = ceta * curb + eta * newb;
+
+    printscalar( "current a", cura );
+    printscalar( "current b", curb );
+  }
+  ( *ra ) = cura;
+  ( *rb ) = curb;
+} // Csimlinmds2
+
 void Csimmds1local( int* rn, double* rdist, int* rp, double* rz, double* rboundary, int* rnepochs, double* rminrate, int* rseed )
 {
   // transfer to C
@@ -971,105 +1069,6 @@ void Csimfxdmds2localinterval( int* rn, double* rdelta, int* rp, double* rz, int
     }
   }
 } // Csimfxdmds2localinterval
-
-void Csimlinmds2( int* rn, double* rdelta, int* rp, double* rz, int* rnepochs, double* rminrate, int* rseed )
-{
-  // transfer to C
-  const size_t n = *rn;
-  const size_t p = *rp;
-  const size_t NEPOCHS = *rnepochs;
-  const double MINRATE = *rminrate;
-  long xseed = ( long )( *rseed );
-  randomize( &xseed );
-
-  double* __restrict pdelta = &rdelta[0];
-  double* __restrict pz = &rz[0];
-
-  // set constants
-  const double EPS = DBL_EPSILON;
-  const double MAXRATE = 0.5;
-  const size_t NSTEPS = 16;
-
-  // set up linear transformation
-  double xmin = DBL_MAX;
-  for ( size_t i = 1, k = 1; i < n; i++, k++ ) for ( size_t j = 0; j < n; j++, k++ ) if ( pdelta[k] < xmin ) xmin = pdelta[k];
-  double cura = 0.0;
-  double curb = 1.0;
-
-  printscalar( "current a", cura );
-  printscalar( "current b", curb );
-
-  // start main loop
-  for ( size_t epoch = 1; epoch <= NEPOCHS; epoch++ ) {
-
-    const double eta = 0.5 * ( MINRATE + MAXRATE ) + 0.5 * ( MAXRATE - MINRATE ) * cos( M_PI * epoch / NEPOCHS );
-    const double ceta = 1.0 - eta;
-
-    // start steps loop
-    for( size_t step = 1; step <= NSTEPS; step++ ) {
-      double wsumx = 0.0;
-      double wsumy = 0.0;
-      double wssqx = 0.0;
-      double cross = 0.0;
-      
-      for ( size_t i = 0; i < n; i++ ) {
-
-        const size_t idx1 = i;
-        size_t idx2 = nextsize_t() % n;
-        while ( idx2 == idx1 ) idx2 = nextsize_t() % n;
-        size_t idx3 = nextsize_t() % n;
-        while ( idx3 == idx1 || idx3 == idx2 ) idx3 = nextsize_t() % n;
-        const size_t idx1p = idx1 * p;
-        const size_t idx2p = idx2 * p;
-        const size_t idx3p = idx3 * p;
-
-        const double d12 = fdist1( p, &pz[idx1p], &pz[idx2p] );
-        const double d13 = fdist1( p, &pz[idx1p], &pz[idx3p] );
-        const double d23 = fdist1( p, &pz[idx2p], &pz[idx3p] );
-        const double delta12 = cura + curb * pdelta[IJ2K( n, idx1, idx2 )];
-        const double delta13 = cura + curb * pdelta[IJ2K( n, idx3, idx1 )];
-        const double delta23 = cura + curb * pdelta[IJ2K( n, idx2, idx3 )];
-      
-        wsumx += ( delta12 - xmin ) + ( delta13 - xmin ) + ( delta23 - xmin );
-        wsumy += d12 + d13 + d23;
-        wssqx += ( delta12 - xmin ) * ( delta12 - xmin ) + ( delta13 - xmin ) * ( delta13 - xmin ) + ( delta23 - xmin ) * ( delta23 - xmin );
-        cross += d12 * ( delta12 - xmin ) + d13 * ( delta13 - xmin ) + d23 * ( delta23 - xmin );
-
-        const double b12 = ( d12 < EPS ? 0.0 : delta12 / d12 );
-        const double b13 = ( d13 < EPS ? 0.0 : delta13 / d13 );
-        const double b23 = ( d23 < EPS ? 0.0 : delta23 / d23 );
-
-        for ( size_t k = 0; k < p; k++ ) {
-          const double z1 = pz[idx1p + k];
-          const double z2 = pz[idx2p + k];
-          const double z3 = pz[idx3p + k];
-          pz[idx1p + k] = ceta * z1 + 0.5 * eta * ( b12 * ( z1 - z2 ) + b13 * ( z1 - z3 ) + z2 + z3 );
-          pz[idx2p + k] = ceta * z2 + 0.5 * eta * ( b12 * ( z2 - z1 ) + b23 * ( z2 - z3 ) + z1 + z3 );
-          pz[idx3p + k] = ceta * z3 + 0.5 * eta * ( b13 * ( z3 - z1 ) + b23 * ( z3 - z2 ) + z1 + z2 );
-        }
-      }
-
-      const double sumw = ( double )( 3 * n );
-      const double work = wssqx * sumw - wsumx * wsumx;
-      double newb = ( isnotzero( work ) ? ( cross * sumw - wsumx * wsumy ) / work : 0.0 );
-      if ( newb < 0.0 ) newb = 0.0;
-      double newa = ( wsumy - newb * wsumx ) / sumw;
-      if ( newa < 0.0 ) { 
-        newa = 0.0;
-        newb = cross / wssqx;
-        if ( newb < 0.0 ) newb = 0.0;
-      }
-      newa -= newb * xmin;
-
-      cura = ceta * cura + eta * newa;
-      curb = ceta * curb + eta * newb;
-
-      printscalar( "current a", cura );
-      printscalar( "current b", curb );
-    
-    }
-  }
-} // Csimlinmds2
 
 void Csimwgtmds1( int* rn, double* rdist, double* rw, int* rp, double* rz, int* rnepochs, double* rminrate, int* rseed )
 {
@@ -2108,7 +2107,7 @@ void Csimfxdwgtmds2localinterval( int* rn, double* rdelta, double* rw, int* rp, 
   }
 } // Csimfxdwgtmds2localinterval
 
-void Csimlmkmds3( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rnlandmarks, int* rseed )
+void Csimmds3bsc( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rseed )
 {
   // transfer to C
   const size_t n = *rn;
@@ -2116,47 +2115,207 @@ void Csimlmkmds3( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepoc
   const size_t p = *rp;
   const size_t NEPOCHS = *rnepochs;
   const double MINRATE = *rminrate;
-  const size_t nlm = *rnlandmarks;
   long xseed = ( long )( *rseed );
   randomize( &xseed );
 
   double* __restrict px = &rx[0];
   double* __restrict pz = &rz[0];
-  int* __restrict ilm = ( int* ) calloc( n, sizeof( int ) );
-  for ( size_t i = 0; i < n; i++ ) ilm[i] = i;
-  size_t* __restrict lm = ( size_t* ) calloc( nlm, sizeof( size_t ) );
-  for ( size_t i = 0; i < nlm; i++ ) {
-    size_t k = i + nextsize_t() % ( n - i );
-    size_t j = ilm[i];
-    lm[i] = ilm[k];
-    ilm[k] = j;
-  }
-  for ( size_t i = 0; i < n; i++ ) ilm[i] = 0;
-  for ( size_t i = 0; i < nlm; i++ ) ilm[lm[i]] = 1;
-  
+
   // set constants
   const double EPS = DBL_EPSILON;
   const double MAXRATE = 0.5;
   const size_t NSTEPS = 16;
-  double SCALE = 1.0 / ( MINRATE * ( double )( 3 * nlm * p * NSTEPS ) );
 
-  // start landmarks loop
-  for ( size_t epoch = 1; epoch <= NEPOCHS; epoch++ ) {
+  // start main loop
+  double fold = 0.0;
+  double fnew = 0.0;
+  size_t epoch = 0;
+  for ( epoch = 1; epoch <= NEPOCHS; epoch++ ) {
+
     const double eta = 0.5 * ( MINRATE + MAXRATE ) + 0.5 * ( MAXRATE - MINRATE ) * cos( M_PI * epoch / NEPOCHS );
     const double ceta = 1.0 - eta;
-    double absdif = 0.0;
-    for( size_t step = 1; step <= NSTEPS; step++ ) for ( size_t i = 0; i < nlm; i++ ) {
-      const size_t idx1 = lm[i];
-      size_t idx2 = lm[nextsize_t() % nlm];
-      while ( idx2 == idx1 ) idx2 = lm[nextsize_t() % nlm];
-      size_t idx3 = lm[nextsize_t() % nlm];
-      while ( idx3 == idx1 || idx3 == idx2 ) idx3 = lm[nextsize_t() % nlm];
+
+    // start steps loop
+    fnew = 0.0;
+    for( size_t step = 0; step < NSTEPS; step++ ) for ( size_t i = 0; i < n; i++ ) {
+
+      const size_t idx1 = i;
+      size_t idx2 = nextsize_t() % n;
+      while ( idx2 == idx1 ) idx2 = nextsize_t() % n;
+      size_t idx3 = nextsize_t() % n;
+      while ( idx3 == idx1 || idx3 == idx2 ) idx3 = nextsize_t() % n;
       const size_t idx1p = idx1 * p;
       const size_t idx2p = idx2 * p;
       const size_t idx3p = idx3 * p;
       const size_t idx1m = idx1 * m;
       const size_t idx2m = idx2 * m;
       const size_t idx3m = idx3 * m;
+
+      const double d12 = fdist1( p, &pz[idx1p], &pz[idx2p] );
+      const double d13 = fdist1( p, &pz[idx1p], &pz[idx3p] );
+      const double d23 = fdist1( p, &pz[idx2p], &pz[idx3p] );
+      const double delta12 = fdist1( m, &px[idx1m], &px[idx2m] );
+      const double delta13 = fdist1( m, &px[idx1m], &px[idx3m] );
+      const double delta23 = fdist1( m, &px[idx2m], &px[idx3m] );
+
+      fnew += pow( delta12 - d12, 2.0 ) + pow( delta13 - d13, 2.0 ) + pow( delta23 - d23, 2.0 );
+
+      const double b12 = ( d12 < EPS ? 0.0 : delta12 / d12 );
+      const double b13 = ( d13 < EPS ? 0.0 : delta13 / d13 );
+      const double b23 = ( d23 < EPS ? 0.0 : delta23 / d23 );
+
+      for ( size_t k = 0; k < p; k++ ) {
+        const double z1 = pz[idx1p + k];
+        const double z2 = pz[idx2p + k];
+        const double z3 = pz[idx3p + k];
+        const double z1star = 0.5 * ( b12 * ( z1 - z2 ) + b13 * ( z1 - z3 ) + z2 + z3 );
+        const double z2star = 0.5 * ( b12 * ( z2 - z1 ) + b23 * ( z2 - z3 ) + z1 + z3 );
+        const double z3star = 0.5 * ( b13 * ( z3 - z1 ) + b23 * ( z3 - z2 ) + z1 + z2 );
+        pz[idx1p + k] = ceta * z1 + eta * z1star;
+        pz[idx2p + k] = ceta * z2 + eta * z2star;
+        pz[idx3p + k] = ceta * z3 + eta * z3star;
+      }
+    }
+    printscalar( "fnew", fnew );
+    printscalar( "fdif                    ", fold - fnew );
+    fold = fnew;
+  }
+  ( *rminrate ) = ( fold - fnew ) / ( double )( NEPOCHS * n );
+  ( *rnepochs ) = epoch;
+} // Csimmds3bsc
+
+void Csimmds3ave( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rseed )
+{
+  // transfer to C
+  const size_t n = *rn;
+  const size_t m = *rm;
+  const size_t p = *rp;
+  const size_t NEPOCHS = *rnepochs;
+  const double MINRATE = *rminrate;
+  long xseed = ( long )( *rseed );
+  randomize( &xseed );
+
+  double* __restrict px = &rx[0];
+  double* __restrict pz = &rz[0];
+  double* __restrict pzbar = ( double* ) calloc( n * p, sizeof( double ) );
+  memcpy( pzbar, pz, n * p * sizeof( double ) );
+
+  // set constants
+  const double EPS = DBL_EPSILON;
+  const double MAXRATE = 0.5;
+  const size_t NSTEPS = 16;
+
+  // start main loop
+  double fold = 0.0;
+  double fnew = 0.0;
+  size_t epoch = 0;
+  for ( epoch = 1; epoch <= NEPOCHS; epoch++ ) {
+
+    const double eta = 0.5 * ( MINRATE + MAXRATE ) + 0.5 * ( MAXRATE - MINRATE ) * cos( M_PI * epoch / NEPOCHS );
+    const double ceta = 1.0 - eta;
+    const double lambda = 1.0 / ( 1.0 + ( double )( epoch ) );
+
+    // start steps loop
+    fnew = 0.0;
+    for( size_t step = 1; step <= NSTEPS; step++ ) for ( size_t i = 0; i < n; i++ ) {
+
+      const size_t idx1 = i;
+      size_t idx2 = nextsize_t() % n;
+      while ( idx2 == idx1 ) idx2 = nextsize_t() % n;
+      size_t idx3 = nextsize_t() % n;
+      while ( idx3 == idx1 || idx3 == idx2 ) idx3 = nextsize_t() % n;
+      const size_t idx1p = idx1 * p;
+      const size_t idx2p = idx2 * p;
+      const size_t idx3p = idx3 * p;
+      const size_t idx1m = idx1 * m;
+      const size_t idx2m = idx2 * m;
+      const size_t idx3m = idx3 * m;
+
+      const double d12 = fdist1( p, &pz[idx1p], &pz[idx2p] );
+      const double d13 = fdist1( p, &pz[idx1p], &pz[idx3p] );
+      const double d23 = fdist1( p, &pz[idx2p], &pz[idx3p] );
+      const double delta12 = fdist1( m, &px[idx1m], &px[idx2m] );
+      const double delta13 = fdist1( m, &px[idx1m], &px[idx3m] );
+      const double delta23 = fdist1( m, &px[idx2m], &px[idx3m] );
+
+      fnew += pow( delta12 - d12, 2.0 ) + pow( delta13 - d13, 2.0 ) + pow( delta23 - d23, 2.0 );
+
+      const double b12 = ( d12 < EPS ? 0.0 : delta12 / d12 );
+      const double b13 = ( d13 < EPS ? 0.0 : delta13 / d13 );
+      const double b23 = ( d23 < EPS ? 0.0 : delta23 / d23 );
+
+      for ( size_t k = 0; k < p; k++ ) {
+        const double z1 = pz[idx1p + k];
+        const double z2 = pz[idx2p + k];
+        const double z3 = pz[idx3p + k];
+        pz[idx1p + k] = ceta * z1 + 0.5 * eta * ( b12 * ( z1 - z2 ) + b13 * ( z1 - z3 ) + z2 + z3 );
+        pz[idx2p + k] = ceta * z2 + 0.5 * eta * ( b12 * ( z2 - z1 ) + b23 * ( z2 - z3 ) + z1 + z3 );
+        pz[idx3p + k] = ceta * z3 + 0.5 * eta * ( b13 * ( z3 - z1 ) + b23 * ( z3 - z2 ) + z1 + z2 );
+        pzbar[idx1p + k] = lambda * pz[idx1p + k] + ( 1.0 - lambda ) * pzbar[idx1p + k];
+        pzbar[idx2p + k] = lambda * pz[idx2p + k] + ( 1.0 - lambda ) * pzbar[idx2p + k];
+        pzbar[idx3p + k] = lambda * pz[idx3p + k] + ( 1.0 - lambda ) * pzbar[idx3p + k];
+      }
+    }
+    printscalar( "fnew", fnew );
+    printscalar( "fdif                    ", fold - fnew );
+    fold = fnew;
+  }
+  memcpy( pz, pzbar, n * p * sizeof( double ) );
+  free( pzbar );
+
+  ( *rminrate ) = ( fold - fnew ) / ( double )( NEPOCHS * n );
+  ( *rnepochs ) = epoch;
+} // Csimmds3ave
+
+void Csimmds3mom( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rnesterov, int* rseed )
+{
+  // transfer to C
+  const size_t n = *rn;
+  const size_t m = *rm;
+  const size_t p = *rp;
+  const size_t NEPOCHS = *rnepochs;
+  const double MINRATE = *rminrate;
+  const bool NESTEROV = ( *rnesterov != 0 );
+  long xseed = ( long )( *rseed );
+  randomize( &xseed );
+
+  double* __restrict px = &rx[0];
+  double* __restrict pz = &rz[0];
+  double* __restrict pzmom = ( double* ) calloc( n * p, sizeof( double ) );
+  dset( n * p, 0.0, pzmom, 1 );
+
+  // set constants
+  const double EPS = DBL_EPSILON;
+  const double MAXRATE = 0.5;
+  const size_t NSTEPS = 16;
+  const double BETA = 0.9;
+
+  // start main loop
+  for ( size_t epoch = 1; epoch <= NEPOCHS; epoch++ ) {
+
+    const double eta = 0.5 * ( MINRATE + MAXRATE ) + 0.5 * ( MAXRATE - MINRATE ) * cos( M_PI * epoch / NEPOCHS );
+
+    // start steps loop
+    for( size_t step = 1; step <= NSTEPS; step++ ) for ( size_t i = 0; i < n; i++ ) {
+
+      const size_t idx1 = i;
+      size_t idx2 = nextsize_t() % n;
+      while ( idx2 == idx1 ) idx2 = nextsize_t() % n;
+      size_t idx3 = nextsize_t() % n;
+      while ( idx3 == idx1 || idx3 == idx2 ) idx3 = nextsize_t() % n;
+      const size_t idx1p = idx1 * p;
+      const size_t idx2p = idx2 * p;
+      const size_t idx3p = idx3 * p;
+      const size_t idx1m = idx1 * m;
+      const size_t idx2m = idx2 * m;
+      const size_t idx3m = idx3 * m;
+
+      if ( NESTEROV == true ) {
+
+      }
+      else {
+
+      }
       const double d12 = fdist1( p, &pz[idx1p], &pz[idx2p] );
       const double d13 = fdist1( p, &pz[idx1p], &pz[idx3p] );
       const double d23 = fdist1( p, &pz[idx2p], &pz[idx3p] );
@@ -2166,63 +2325,116 @@ void Csimlmkmds3( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepoc
       const double b12 = ( d12 < EPS ? 0.0 : delta12 / d12 );
       const double b13 = ( d13 < EPS ? 0.0 : delta13 / d13 );
       const double b23 = ( d23 < EPS ? 0.0 : delta23 / d23 );
+
       for ( size_t k = 0; k < p; k++ ) {
         const double z1 = pz[idx1p + k];
         const double z2 = pz[idx2p + k];
         const double z3 = pz[idx3p + k];
-        pz[idx1p + k] = ceta * z1 + 0.5 * eta * ( b12 * ( z1 - z2 ) + b13 * ( z1 - z3 ) + z2 + z3 );
-        pz[idx2p + k] = ceta * z2 + 0.5 * eta * ( b12 * ( z2 - z1 ) + b23 * ( z2 - z3 ) + z1 + z3 );
-        pz[idx3p + k] = ceta * z3 + 0.5 * eta * ( b13 * ( z3 - z1 ) + b23 * ( z3 - z2 ) + z1 + z2 );
-        absdif += fabs( z1 - pz[idx1p + k] ) + fabs( z2 - pz[idx2p + k] ) + fabs( z3 - pz[idx3p + k] );
+        pzmom[idx1p + k] = BETA * pzmom[idx1p + k] - eta * ( z1 - 0.5 * ( b12 * ( z1 - z2 ) + b13 * ( z1 - z3 ) + z2 + z3 ) );
+        pzmom[idx2p + k] = BETA * pzmom[idx2p + k] - eta * ( z2 - 0.5 * ( b12 * ( z2 - z1 ) + b23 * ( z2 - z3 ) + z1 + z3 ) );
+        pzmom[idx3p + k] = BETA * pzmom[idx3p + k] - eta * ( z3 - 0.5 * ( b13 * ( z3 - z1 ) + b23 * ( z3 - z2 ) + z1 + z2 ) );
+        pz[idx1p + k] += pzmom[idx1p + k];
+        pz[idx2p + k] += pzmom[idx2p + k];
+        pz[idx3p + k] += pzmom[idx3p + k];
       }
     }
-    absdif *= SCALE;
-    //printscalar( "", absdif );
-    if ( absdif < MINRATE ) break;
   }
+  free( pzmom );
 
-  // loop over out-of-samples
-  SCALE = 1.0 / ( MINRATE * ( double )( nlm * p * NSTEPS ) );
-  for ( size_t i = 0; i < n; i++ ) if ( ilm[i] == 0 ) {
-    for ( size_t epoch = 1; epoch <= NEPOCHS; epoch++ ) {
-      const double eta = 0.5 * ( MINRATE + MAXRATE ) + 0.5 * ( MAXRATE - MINRATE ) * cos( M_PI * epoch / NEPOCHS );
-      const double ceta = 1.0 - eta;
-        double absdif = 0.0;
-      for( size_t step = 1; step <= NSTEPS; step++ ) for ( size_t j = 0; j < nlm; j++ ) {
-        const size_t idx1 = i;
-        const size_t idx2 = lm[j];
-        size_t idx3 = lm[nextsize_t() % nlm];
-        while ( idx3 == idx2 ) idx3 = lm[nextsize_t() % nlm];
-        const size_t idx1p = idx1 * p;
-        const size_t idx2p = idx2 * p;
-        const size_t idx3p = idx3 * p;
-        const size_t idx1m = idx1 * m;
-        const size_t idx2m = idx2 * m;
-        const size_t idx3m = idx3 * m;
-        const double d12 = fdist1( p, &pz[idx1p], &pz[idx2p] );
-        const double d13 = fdist1( p, &pz[idx1p], &pz[idx3p] );
-        const double delta12 = fdist1( m, &px[idx1m], &px[idx2m] );
-        const double delta13 = fdist1( m, &px[idx1m], &px[idx3m] );
-        const double b12 = ( d12 < EPS ? 0.0 : delta12 / d12 );
-        const double b13 = ( d13 < EPS ? 0.0 : delta13 / d13 );
-        for ( size_t k = 0; k < p; k++ ) {
-          const double z1 = pz[idx1p + k];
-          const double z2 = pz[idx2p + k];
-          const double z3 = pz[idx3p + k];
-          pz[idx1p + k] = ceta * z1 + 0.5 * eta * ( b12 * ( z1 - z2 ) + b13 * ( z1 - z3 ) + z2 + z3 );
-          absdif += fabs( z1 - pz[idx1p + k] );
-        }
+} // Csimmds3mom
+
+void Csimmds3adm( int* rn, int* rm, double* rx, int* rp, double* rz, int* rnepochs, double* rminrate, int* rnesterov, int* rseed )
+{
+  // transfer to C
+  const size_t n = *rn;
+  const size_t m = *rm;
+  const size_t p = *rp;
+  const size_t NEPOCHS = *rnepochs;
+  const double MINRATE = *rminrate;
+  const bool NESTEROV = ( *rnesterov != 0 );
+  long xseed = ( long )( *rseed );
+  randomize( &xseed );
+
+  double* __restrict px = &rx[0];
+  double* __restrict pz = &rz[0];
+  double* __restrict pzave = ( double* ) calloc( n * p, sizeof( double ) );
+  dset( n * p, 0.0, pzave, 1 );
+  double* __restrict pzvar = ( double* ) calloc( n * p, sizeof( double ) );
+  dset( n * p, 0.0, pzvar, 1 );
+
+  // set constants
+  const double EPS = DBL_EPSILON;
+  const double MAXRATE = 0.5;
+  const size_t NSTEPS = 16;
+  const double BETA1 = 0.9;
+  const double BETA2 = 0.999;
+
+  // start main loop
+  size_t t = 0;
+  for ( size_t epoch = 1; epoch <= NEPOCHS; epoch++ ) {
+
+    const double eta = 0.5 * ( MINRATE + MAXRATE ) + 0.5 * ( MAXRATE - MINRATE ) * cos( M_PI * epoch / NEPOCHS );
+
+    // start steps loop
+    for( size_t step = 1; step <= NSTEPS; step++ ) for ( size_t i = 0; i < n; i++ ) {
+
+      const size_t idx1 = i;
+      size_t idx2 = nextsize_t() % n;
+      while ( idx2 == idx1 ) idx2 = nextsize_t() % n;
+      size_t idx3 = nextsize_t() % n;
+      while ( idx3 == idx1 || idx3 == idx2 ) idx3 = nextsize_t() % n;
+      const size_t idx1p = idx1 * p;
+      const size_t idx2p = idx2 * p;
+      const size_t idx3p = idx3 * p;
+      const size_t idx1m = idx1 * m;
+      const size_t idx2m = idx2 * m;
+      const size_t idx3m = idx3 * m;
+
+      if ( NESTEROV == true ) {
+
       }
-      absdif *= SCALE;
-      //printscalar( "", absdif );
-      if ( absdif < MINRATE ) break;
+      else {
+
+      }
+      const double d12 = fdist1( p, &pz[idx1p], &pz[idx2p] );
+      const double d13 = fdist1( p, &pz[idx1p], &pz[idx3p] );
+      const double d23 = fdist1( p, &pz[idx2p], &pz[idx3p] );
+      const double delta12 = fdist1( m, &px[idx1m], &px[idx2m] );
+      const double delta13 = fdist1( m, &px[idx1m], &px[idx3m] );
+      const double delta23 = fdist1( m, &px[idx2m], &px[idx3m] );
+      const double b12 = ( d12 < EPS ? 0.0 : delta12 / d12 );
+      const double b13 = ( d13 < EPS ? 0.0 : delta13 / d13 );
+      const double b23 = ( d23 < EPS ? 0.0 : delta23 / d23 );
+
+      for ( size_t k = 0; k < p; k++ ) {
+        const double z1 = pz[idx1p + k];
+        const double z2 = pz[idx2p + k];
+        const double z3 = pz[idx3p + k];
+        const double g1 = z1 - 0.5 * ( b12 * ( z1 - z2 ) + b13 * ( z1 - z3 ) + z2 + z3 );
+        const double g2 = z2 - 0.5 * ( b12 * ( z2 - z1 ) + b23 * ( z2 - z3 ) + z1 + z3 );
+        const double g3 = z3 - 0.5 * ( b13 * ( z3 - z1 ) + b23 * ( z3 - z2 ) + z1 + z2 );
+        pzave[idx1p + k] = BETA1 * pzave[idx1p + k] + ( 1.0 - BETA1 ) * g1;
+        pzave[idx2p + k] = BETA1 * pzave[idx2p + k] + ( 1.0 - BETA1 ) * g2;
+        pzave[idx3p + k] = BETA1 * pzave[idx3p + k] + ( 1.0 - BETA1 ) * g3;
+        pzvar[idx1p + k] = BETA2 * pzvar[idx1p + k] + ( 1.0 - BETA2 ) * g1 * g1;
+        pzvar[idx2p + k] = BETA2 * pzvar[idx2p + k] + ( 1.0 - BETA2 ) * g2 * g2;
+        pzvar[idx3p + k] = BETA2 * pzvar[idx3p + k] + ( 1.0 - BETA2 ) * g3 * g3;
+        const double ca1 = pzave[idx1p + k] / ( 1.0 - pow( BETA1, t ) );
+        const double ca2 = pzave[idx2p + k] / ( 1.0 - pow( BETA1, t ) );
+        const double ca3 = pzave[idx3p + k] / ( 1.0 - pow( BETA1, t ) );
+        const double cv1 = pzvar[idx1p + k] / ( 1.0 - pow( BETA2, t ) );
+        const double cv2 = pzvar[idx2p + k] / ( 1.0 - pow( BETA2, t ) );
+        const double cv3 = pzvar[idx3p + k] / ( 1.0 - pow( BETA2, t ) );
+        pz[idx1p + k] -= eta * ca1 / sqrt( cv1 + DBL_EPSILON );
+        pz[idx2p + k] -= eta * ca2 / sqrt( cv2 + DBL_EPSILON );
+        pz[idx3p + k] -= eta * ca3 / sqrt( cv3 + DBL_EPSILON );
+      }
     }
   }
+  free( pzave );
+  free( pzvar );
 
-  free( ilm );
-  free( lm );
-
-} // Csimlmkmds3
+} // Csimmds3adm
 
 void simmds_unittest( long seed )
 {
@@ -2290,16 +2502,8 @@ void simmds_unittest( long seed )
     for ( size_t i = 1, k = 1; i <= n; i++ ) for ( size_t j = 1; j <= p; j++, k++ ) z[i][j] = nextdouble();
     double** d = getmatrix( n, n, 0.0 );
 
-    int intn = ( int )( n );
-    int intm = ( int )( m );
-    int intp = ( int )( p );
-    int intseed = ( int )( seed );
-    int nepochs = 512;;
-    int nlandmarks = 4;
-    double minrate = 0.001;
-
     tm = setstarttime();
-    Csimlmkmds3( &intn, &intm, &data[1][1], &intp, &z[1][1], &nepochs, &minrate, &nlandmarks, &intseed );
+
     printscalar( "elapsed for Csimlmkmds3", getelapsedtime( tm ) );
     euclidean1( n, p, z, d );
     printscalar( "stress = ", dsse( n * n, &delta[1][1], 1, &d[1][1], 1 ) / dssq( n * n, &delta[1][1], 1 ) );  
@@ -2332,7 +2536,6 @@ void simmds_unittest( long seed )
     int intp = ( int )( p );
     int intseed = ( int )( seed );
     int nepochs = 1024;
-    int nlandmarks = 10;
     double minrate = 0.001;
 
     tm = setstarttime();
@@ -2340,12 +2543,6 @@ void simmds_unittest( long seed )
     printscalar( "elapsed for Csimmds3", getelapsedtime( tm ) );
     euclidean1( n, p, z, d );
     printscalar( "stress", dsse( n * n, &delta[1][1], 1, &d[1][1], 1 ) / dssq( n * n, &delta[1][1], 1 ) );  
-
-    tm = setstarttime();
-    Csimlmkmds3( &intn, &intm, &data[1][1], &intp, &z[1][1], &nepochs, &minrate, &nlandmarks, &intseed );
-    printscalar( "elapsed for Csimlmkmds3", getelapsedtime( tm ) );
-    euclidean1( n, p, z, d );
-    printscalar( "stress = ", dsse( n * n, &delta[1][1], 1, &d[1][1], 1 ) / dssq( n * n, &delta[1][1], 1 ) );  
 
     freematrix( data );
     freematrix( delta );
@@ -2357,28 +2554,34 @@ void simmds_unittest( long seed )
   // example with linear transformation
   {
     size_t n = 1000;
-    size_t m = 10; 
+    size_t m = 2; 
     size_t p = 2;
+    double atrue = 2.0;
+    double btrue = 0.5;
     size_t tm = setstarttime();
 
     double** data = getmatrix( n, m, 0.0 );
     for ( size_t i = 1; i <= n; i++ ) for ( size_t j = 1; j <= m; j++ ) data[i][j] = 10.0 * nextdouble();
     double** delta = getmatrix( n, n, 0.0 );
     euclidean1( n, m, data, delta );
+    for ( size_t i = 1; i <= n; i++ ) for ( size_t j = 1; j <= n; j++ ) if ( i != j ) delta[i][j] = atrue + btrue * delta[i][j];
     double** z = getmatrix( n, p, 0.0 );
     for ( size_t i = 1; i <= n; i++ ) for ( size_t j = 1; j <= p; j++ ) z[i][j] = 10.0 * nextdouble();
     double** d = getmatrix( n, n, 0.0 );
 
     int intn = ( int )( n );
-    int intm = ( int )( m );
     int intp = ( int )( p );
     int intseed = ( int )( seed );
     int nepochs = 1024;
     double minrate = 0.001;
+    double aest = 0.0;
+    double best = 1.0;
 
     tm = setstarttime();
-    Csimmds3( &intn, &intm, &data[1][1], &intp, &z[1][1], &nepochs, &minrate, &intseed );
-    printscalar( "elapsed for Csimmds3", getelapsedtime( tm ) );
+    Csimlinmds2( &intn, &delta[1][1], &aest, &best, &intp, &z[1][1], &nepochs, &minrate, &intseed );
+    printscalar( "elapsed for Csimlinmds2", getelapsedtime( tm ) );
+    euclidean1( n, m, data, delta );
+    for ( size_t i = 1; i <= n; i++ ) for ( size_t j = 1; j <= n; j++ ) if ( i != j ) delta[i][j] = aest + best * delta[i][j];
     euclidean1( n, p, z, d );
     printscalar( "stress", dsse( n * n, &delta[1][1], 1, &d[1][1], 1 ) / dssq( n * n, &delta[1][1], 1 ) );  
 
